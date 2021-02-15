@@ -1,0 +1,66 @@
+
+<html>
+ <!--        <form id="upload" enctype="multipart/form-data" method="post" action="http://0.0.0.0:5000/predict">
+ -->
+ <!--             </form>-->
+
+ <body>
+        
+        <div>
+            <label for="filePicker">Choose or drag a file:</label><br>
+            <input type="file" id="filePicker">
+
+            <button id="predict-button">Predict</button>
+            <p>Pneumonia: <span id="Pneumonia-predict"></span></p>
+            <img id="selected-image" src=""/>
+        </div>
+        <br>
+        <div>
+            <h1>Base64 encoded version</h1>
+            <textarea id="base64textarea" placeholder="Base64 will appear here" cols="50" rows="15"></textarea>
+        </div>
+    </div>
+    
+      <!-- TODO: Missing CoffeeScript 2 -->
+    
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+      <script type="text/javascript">
+    //<![CDATA[
+    
+        
+    var handleFileSelect = function(evt) {
+        var files = evt.target.files;
+        var file = files[0];
+    
+        if (files && file) {
+            var reader = new FileReader();
+    
+            reader.onload = function(readerEvt) {
+                var binaryString = readerEvt.target.result;
+                document.getElementById("base64textarea").value = btoa(binaryString);
+            };
+    
+            reader.readAsBinaryString(file);
+        }
+    };
+    
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        document.getElementById('filePicker').addEventListener('change', handleFileSelect, false);
+    } else {
+        alert('The File APIs are not fully supported in this browser.');
+    }
+    $("#predict-button").click(function(event){
+            let base64Image = document.getElementById("base64textarea").value;
+            let message = {
+                image: base64Image
+            }
+            console.log(message);
+            $.post("http://0.0.0.0:5000/predict", JSON.stringify(message), function(response){
+                $("#Pneumonia-predict").text(response.prediction.prob + "%");
+                console.log(response);
+            });
+        });
+    
+    //]]></script>
+</html>
+

@@ -9,6 +9,8 @@ from keras.models import load_model
 from flask import request
 from flask import jsonify
 from flask import Flask
+from flask import render_template
+from flask import redirect
 import tensorflow as tf
 from keras.models import Sequential, Model
 from keras.applications.vgg16 import VGG16, preprocess_input
@@ -22,6 +24,9 @@ from keras.optimizers import Adam, SGD, RMSprop
 from keras.callbacks import ModelCheckpoint, Callback, EarlyStopping
 from keras.utils import to_categorical
 import math
+import random
+import string
+import datetime
 
 app = Flask(__name__)
 
@@ -43,6 +48,8 @@ def preprocess_image(img):
     img = img.astype(np.float32)/255.
 
     img = np.expand_dims(img, axis = 0)
+
+    cv2.imwrite("static/i.bmp", img)
 
     return img
 
@@ -94,34 +101,41 @@ def inv_log_transformation(value):
 
     return prob
 
-   
+
 
 
 print("loading keras model...")
 get_model()
+def randomString(stringLength=10):
+    letters = string.ascii_lowercase
+    strT = ''.join(random.choice(letters) for i in range(stringLength))
+    return "static/StoredImages/" + strT
 
-#it will launch here: "http://0.0.0.0:5000/static/predict2.html"
 @app.route("/predict", methods=['POST'])
 def predict():
     message = request.get_json(force=True)
     encoded = message['image']
     decoded = base64.b64decode(encoded)
-    f = open("temp.jpg","w+")
-    f.write(decoded)
-    f = open("static/temp.jpg","w+")
-    f.write(decoded)
-    f.close()
+    with open("temp.jpg","wb+") as f:
+        f.write(decoded)
+    currentDT = datetime.datetime.now()
+    currentDT = str(currentDT).split(' ')[1].replace('.',',').replace(':','_')
+    filepath = randomString(8) + currentDT + ".jpg"
+    print(filepath)
+    with open(filepath,"wb+") as f:
+        f.write(decoded)
     image = Image.open(io.BytesIO(decoded))
     processed_image = preprocess_image(image)
     with graph.as_default():
         prediction = model.predict(processed_image).tolist()
-    
+
     prob = inv_log_transformation(prediction[0][0])
     print(prob)
 
     response = {
         'prediction': {
-            'prob' : prob
+            'prob' : prob,
+            'filepath' : filepath
         }
     }
     return jsonify(response)
@@ -134,4 +148,21 @@ def hello():
     name = message['name']
     response = {'greeting': 'Hello,' + name + '!'}
     return jsonify(response)
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/static/')
+@app.route('/static/mail/')
+@app.route('/static/mail/contact_me.php')
+def rickrollhackers():
+    return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='127.0.0.1')
+
+
 

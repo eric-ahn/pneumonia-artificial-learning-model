@@ -1,0 +1,82 @@
+
+<html>
+ <!--        <form id="upload" enctype="multipart/form-data" method="post" action="http://0.0.0.0:5000/predict">
+ -->
+ <!--             </form>-->
+<head>
+  <title>PALM - Pneumonia ALM</title>
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <script src="jquery-3.3.1.min.js"></script>
+  <script src="bootstrap.min.js"></script>
+</head>
+ <body>
+<body>
+
+	<div class="container mt-3">
+	  <h2>Pneumonia detection</h2>
+	  <p>Upload a chest x-ray</p>
+
+		 <div>
+			<div>
+				<div class="custom-file">
+					<input type="file" class="custom-file-input" id="filePicker">
+					<label class="custom-file-label" for="customFile">Choose file</label>
+				</div>
+				<div class="mt-3">
+				  <button type="submit" class="btn btn-primary"id="predict-button">Predict</button>
+				</div>
+
+				<div class="mt-3">
+					<p>Pneumonia: <span id="Pneumonia-predict"></span></p>
+					<img id="selected-image" src=""/>
+				</div>
+			</div>
+			<br>
+			<div>
+				<textarea hidden="true" id="base64textarea" placeholder="Base64 will appear here"   class="form-control" rows="3"></textarea>
+			</div>
+		</div>
+	</div>
+
+      <!-- TODO: Missing CoffeeScript 2 -->
+
+      <script type="text/javascript">
+    //<![CDATA[
+
+
+    var handleFileSelect = function(evt) {
+        var files = evt.target.files;
+        var file = files[0];
+
+        if (files && file) {
+            var reader = new FileReader();
+
+            reader.onload = function(readerEvt) {
+                var binaryString = readerEvt.target.result;
+                document.getElementById("base64textarea").value = btoa(binaryString);
+            };
+
+            reader.readAsBinaryString(file);
+        }
+    };
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        document.getElementById('filePicker').addEventListener('change', handleFileSelect, false);
+    } else {
+        alert('The File APIs are not fully supported in this browser.');
+    }
+    $("#predict-button").click(function(event){
+            let base64Image = document.getElementById("base64textarea").value;
+            let message = {
+                image: base64Image
+            }
+            console.log(message);
+            $.post("http://0.0.0.0:5000/predict", JSON.stringify(message), function(response){
+                $("#Pneumonia-predict").text(response.prediction.prob + "%");
+                console.log(response);
+            });
+        });
+
+    //]]></script>
+</html>
+
