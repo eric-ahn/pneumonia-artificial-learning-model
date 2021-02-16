@@ -1,5 +1,3 @@
-# vim: set ft=rst:
+# Pneumonia Artificial Learning Model (MyPALM)
 
-See https://help.pythonanywhere.com/ (or click the "Help" link at the top
-right) for help on how to use PythonAnywhere, including tips on copying and
-pasting from consoles, and writing your own web applications.
+A web app that could detect the presence of pneumonia through an xray of a patient's lungs. Created with Python, Therano, and Flask.
